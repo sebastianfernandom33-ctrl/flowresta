@@ -150,6 +150,29 @@ const branchData = {
   },
 };
 
+const commitData = {
+  main: [
+    "abc123 Initial commit",
+    "def456 Add authentication",
+    "ghi789 Merge release",
+  ],
+
+  develop: [
+    "aaa111 Fix login",
+    "bbb222 Update pipeline",
+    "ccc333 Improve UI",
+  ],
+
+  release: [
+    "ddd444 Release v1.2",
+    "eee555 Update changelog",
+  ],
+
+  hotfix: [
+    "fff666 Fix production bug",
+  ],
+};
+
 const STORAGE_KEY = "flowresta-layout";
 
 function App() {
@@ -178,6 +201,44 @@ function App() {
 
   const [selectedBranch, setSelectedBranch] = useState("Nenhuma");
 
+  const resetLayout = () => {
+    localStorage.removeItem(STORAGE_KEY);
+
+  setNodes(initialNodes);
+
+    setSelectedBranch("Nenhuma");
+  };
+
+  const importRepository = () => {
+
+    if (!repositoryUrl.trim()) {
+      return;
+    }
+
+    setRepositoryLoaded(true);
+  };
+
+  const [compareMode, setCompareMode] =
+    useState(false);
+
+  const [compareBranchA, setCompareBranchA] =
+    useState("");
+
+  const [compareBranchB, setCompareBranchB] =
+    useState("");
+
+  const [repositoryUrl, setRepositoryUrl] =
+    useState("");
+
+  const [repositoryLoaded, setRepositoryLoaded] =
+    useState(false);  
+
+  const repositoryName =
+    repositoryUrl
+      .replace("https://github.com/", "")
+      .replace("https://gitlab.com/", "");
+
+
   const [hoveredBranch, setHoveredBranch] = useState("");
 
   const [isDragging, setIsDragging] = useState(false);
@@ -200,13 +261,143 @@ function App() {
       ...node.style,
 
       boxShadow:
-        selectedBranch === node.id
+
+        node.id === compareBranchB
+          ? "0 0 20px #a371f7"
+
+          : node.id === compareBranchA
+          ? "0 0 15px #a371f7"
+
+          : selectedBranch === node.id
           ? "inset 0 0 0 2px #8b949e"
+
           : node.style?.boxShadow,
     },
   }));
 
+  const summary = {
+    conflict: 0,
+    mr: 0,
+    normal: 0,
+    ok: 0,
+  };
+
+  edges.forEach((edge) => {
+    const color = edge.style?.stroke;
+
+    if (color === "#f85149") {
+      summary.conflict++;
+    }
+
+    else if (color === "#d29922") {
+      summary.mr++;
+    }
+
+    else if (color === "#3fb950") {
+      summary.ok++;
+    }
+
+    else {
+      summary.normal++;
+    }
+  });
+
+if (!repositoryLoaded) {
+
   return (
+
+    <div
+      style={{
+        background: "#0d1117",
+        color: "#ffffff",
+        minHeight: "100vh",
+
+        display: "flex",
+
+        flexDirection: "column",
+
+        justifyContent: "center",
+
+        alignItems: "center",
+
+        gap: "20px",
+      }}
+    >
+      <h1>
+        🌲 {repositoryName || "Flowresta"}
+      </h1>
+
+      <input
+        type="text"
+
+        value={repositoryUrl}
+
+        onChange={(e) =>
+          setRepositoryUrl(e.target.value)
+        }
+
+        placeholder="Insert Git URL"
+
+        style={{
+          width: "500px",
+
+          padding: "12px",
+
+          background: "#161b22",
+
+          color: "#c9d1d9",
+
+          border: "1px solid #30363d",
+
+          borderRadius: "10px",
+
+          fontFamily:
+            "JetBrains Mono, monospace",
+        }}
+      />
+
+      <button
+        onClick={importRepository}
+
+        style={{
+          background: "#238636",
+
+          color: "white",
+
+          border: "none",
+
+          borderRadius: "10px",
+
+          padding: "12px 24px",
+
+          cursor: "pointer",
+
+          fontFamily:
+            "JetBrains Mono, monospace",
+        }}
+      >
+        Import
+      </button>
+
+      <p
+        style={{
+          color: "#8b949e",
+
+          fontStyle: "italic",
+
+          fontFamily:
+            "JetBrains Mono, monospace",
+        }}
+      >
+        🌱 Plant your Flowrest here 🌳
+      </p>
+
+    </div>
+
+  );
+}
+  return (
+
     <div
       style={{
         background: "#0d1117",
@@ -215,7 +406,135 @@ function App() {
         padding: "20px",
       }}
     >
-      <h1>🌲 Flowresta</h1>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+
+        <h1>
+          🌲 {repositoryName || "Flowresta"}
+        </h1>
+
+        <div
+          style={{
+            display: "flex",
+            gap: "12px",
+            alignItems: "center",
+            color: "#8b949e",
+            fontFamily: "JetBrains Mono, monospace",
+          }}
+        >
+          <span
+            title="Merge Conflicts"
+            style={{
+              color: "#f85149",
+              fontSize: "20px",
+            }}
+          >
+            ◉{summary.conflict}
+          </span>
+
+          <span
+            title="Merge Requests"
+            style={{
+              color: "#d29922",
+              fontSize: "20px",
+            }}
+          >
+            ◉{summary.mr}
+          </span>
+
+          <span
+            title="Normal Relationships"
+            style={{
+              color: "#8b949e",
+              fontSize: "20px",
+            }}
+          >
+            ◉{summary.normal}
+          </span>
+
+          <span
+            title="Merge OK"
+            style={{
+              color: "#3fb950",
+              fontSize: "20px",
+            }}
+          >
+            ◉{summary.ok}
+          </span>
+
+         <button
+            onClick={resetLayout}
+            title="Reset Layout"
+            style={{
+              background: "#161b22",
+              color: "#8b949e",
+              border: "1px solid #30363d",
+              borderRadius: "8px",
+              padding: "6px 14px",
+              cursor: "pointer",
+              fontFamily: "JetBrains Mono, monospace",
+              fontSize: "30px",
+            }}
+          >
+            ↺
+          </button>
+
+          <button
+            onClick={() => {
+
+              setCompareMode(!compareMode);
+
+              if (compareMode) {
+                setCompareBranchA("");
+                setCompareBranchB("");
+              }
+
+            }}
+
+            title="Compare"
+
+            style={{
+              background: "#161b22",
+
+              color: compareMode
+                ? "#a371f7"
+                : "#8b949e",
+
+              border: compareMode
+                ? "1px solid #a371f7"
+                : "1px solid #30363d",
+
+              borderRadius: "8px",
+
+              padding: "6px 16px",
+
+              cursor: "pointer",
+
+              fontFamily: "JetBrains Mono, monospace",
+
+              fontSize: "30px",
+            }}
+          >
+            {
+              !compareMode
+                ? "✢"
+                : compareBranchA && compareBranchB
+                ? "❃"
+                : compareBranchA
+                ? "✻"
+                : "✢"
+
+            }
+          </button>
+
+        </div>
+
+      </div>
 
       <div
         style={{
@@ -226,7 +545,7 @@ function App() {
         }}
       >
         <ReactFlow
-          nodes={nodes}
+          nodes={styledNodes}
           edges={edges}
           onPaneClick={() => {
             setSelectedBranch("Nenhuma");
@@ -249,7 +568,24 @@ function App() {
           zoomOnScroll={false}
           nodesDraggable={true}
           onNodeClick={(_, node) => {
-            setSelectedBranch(node.id);
+
+            if (!compareMode) {
+              setSelectedBranch(node.id);
+              return;
+            }
+
+            if (!compareBranchA) {
+              setCompareBranchA(node.id);
+              return;
+            }
+
+            if (
+              !compareBranchB &&
+              node.id !== compareBranchA
+            ) {
+              setCompareBranchB(node.id);
+            }
+
           }}
 
           onNodeMouseEnter={(event, node) => {
@@ -278,74 +614,125 @@ function App() {
       </div>
 
 
-      <div
+<div
+  style={{
+    marginTop: "20px",
+    display: "flex",
+    gap: "20px",
+  }}
+>
+
+  <div
+    style={{
+      flex: 1,
+      padding: "15px",
+      border: "1px solid #30363d",
+      borderRadius: "12px",
+      textAlign: "left",
+      color: "#c9d1d9",
+      fontFamily: "JetBrains Mono, monospace",
+    }}
+  >
+
+    <h3>↪︎ Branch Details</h3>
+
+    {selectedBranch === "Nenhuma" ? (
+      <p
         style={{
-          marginTop: "20px",
-          padding: "15px",
-          border: "1px solid #30363d",
-          borderRadius: "12px",
-          textAlign: "left",
-          color: "#c9d1d9",
-          fontFamily: "JetBrains Mono, monospace",
+          fontStyle: "italic",
+          color: "#8b949e",
         }}
       >
-        <h3>↪︎Branch Details</h3>
+        select branch...
+      </p>
+    ) : (
+      <p>
+        <strong>Name:</strong> {selectedBranch}
+      </p>
+    )}
 
-        {selectedBranch === "Nenhuma" ? (
-          <p
-            style={{
-              fontStyle: "italic",
-              color: "#8b949e",
-            }}
-          >
-            select branch...
-          </p>
-        ) : (
-          <p>
-            <strong>Name:</strong> {selectedBranch}
-          </p>
-        )}
+    {details?.protected && (
+      <p
+        style={{
+          fontStyle: "italic",
+          color: "#8b949e",
+        }}
+      >
+        protected
+      </p>
+    )}
 
-        {details?.protected && (
-          <p
-            style={{
-              fontStyle: "italic",
-              color: "#8b949e",
-            }}
-          >
-            protected
-          </p>
-        )}
+    {details && (
+      <>
+        <p>
+          <strong>Author:</strong> {details.author}
+        </p>
 
-        {details ? (
-          <>
-          
+        <p>
+          <strong>Last Pipeline:</strong>{" "}
 
-            <p>
-              <strong>Author:</strong> {details.author}
-            </p>
+          {details.pipeline === "success" && "OK"}
 
-            <p>
-              <strong>Last Pipeline:</strong>{" "}
+          {details.pipeline === "failed" && "NOK"}
 
-              {details.pipeline === "success" && "OK"}
+          {details.pipeline === "running" && "Running"}
 
-              {details.pipeline === "failed" && "NOK"}
+          {details.pipeline === "not-started" && "Not Started"}
+        </p>
 
-              {details.pipeline === "running" && "Running"}
+        <p>
+          <strong>Roles:</strong>{" "}
+          {details.roles.join(", ")}
+        </p>
+      </>
+    )}
 
-              {details.pipeline === "not-started" && "Not Started"}
-            </p>
+  </div>
 
-            <p>
-              <strong>Roles:</strong>{" "}
-              {details.roles.join(", ")}
-            </p>
+  <div
+    style={{
+      flex: 1,
+      padding: "15px",
+      border: "1px solid #30363d",
+      borderRadius: "12px",
+      textAlign: "left",
+      color: "#c9d1d9",
+      fontFamily: "JetBrains Mono, monospace",
+    }}
+  >
 
-          </>
-        ) : null}
-      </div>
-    
+    <h3>↪︎ Commit History</h3>
+
+    {selectedBranch !== "Nenhuma" ? (
+
+      commitData[
+        selectedBranch as keyof typeof commitData
+      ]?.map((commit) => (
+
+        <p key={commit}>
+          {commit}
+        </p>
+
+      ))
+
+    ) : (
+
+      <p
+        style={{
+          color: "#8b949e",
+          fontStyle: "italic",
+        }}
+      >
+        select branch...
+      </p>
+
+    )}
+
+  </div>
+
+</div>
+
+
     {hoveredDetails && !isDragging && (
       <div
         style={{
