@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import React from "react";
+import flowrestaLogo from "./assets/flowresta-logo.png";
 import ReactFlow, {
   Background,
   Controls,
@@ -173,6 +174,23 @@ const commitData = {
   ],
 };
 
+const compareData = {
+  "main-develop": {
+    ahead: 3,
+    behind: 1,
+  },
+
+  "main-release": {
+    ahead: 5,
+    behind: 0,
+  },
+
+  "develop-hotfix": {
+    ahead: 2,
+    behind: 2,
+  },
+};
+
 const STORAGE_KEY = "flowresta-layout";
 
 function App() {
@@ -187,36 +205,10 @@ function App() {
         : initialNodes
     );
 
-  console.log("CURRENT NODES", nodes);
-
-  useEffect(() => {
-    console.log("saving", nodes);
-
-
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(nodes)
-    );
-  }, [nodes]);
+  const [reactFlowInstance, setReactFlowInstance] =
+    useState<any>(null);
 
   const [selectedBranch, setSelectedBranch] = useState("Nenhuma");
-
-  const resetLayout = () => {
-    localStorage.removeItem(STORAGE_KEY);
-
-  setNodes(initialNodes);
-
-    setSelectedBranch("Nenhuma");
-  };
-
-  const importRepository = () => {
-
-    if (!repositoryUrl.trim()) {
-      return;
-    }
-
-    setRepositoryLoaded(true);
-  };
 
   const [compareMode, setCompareMode] =
     useState(false);
@@ -231,7 +223,63 @@ function App() {
     useState("");
 
   const [repositoryLoaded, setRepositoryLoaded] =
-    useState(false);  
+    useState(false);
+
+  console.log("CURRENT NODES", nodes);
+
+  useEffect(() => {
+    console.log("saving", nodes);
+
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(nodes)
+    );
+  }, [nodes]);
+
+  useEffect(() => {
+
+    if (!reactFlowInstance) {
+      return;
+    }
+
+  const compareReady =
+      compareMode &&
+      compareBranchA &&
+      compareBranchB;
+
+    setTimeout(() => {
+
+      reactFlowInstance.fitView({
+        padding: compareReady ? 0.4 : 0.2,
+        duration: 800,
+      });
+
+    }, 350);
+
+  }, [
+    compareMode,
+    compareBranchA,
+    compareBranchB,
+    reactFlowInstance,
+  ]);
+
+  const resetLayout = () => {
+    localStorage.removeItem(STORAGE_KEY);
+
+  setNodes(initialNodes);
+
+    setSelectedBranch("Nenhuma");
+  };
+  
+  const importRepository = () => {
+
+    if (!repositoryUrl.trim()) {
+      return;
+    }
+
+    setRepositoryLoaded(true);
+  };  
 
   const repositoryName =
     repositoryUrl
@@ -253,6 +301,14 @@ function App() {
 
   const hoveredDetails =
     branchData[hoveredBranch as keyof typeof branchData];
+
+  const compareKey =
+    `${compareBranchA}-${compareBranchB}`;
+
+  const compareDetails =
+    compareData[
+      compareKey as keyof typeof compareData
+    ];
 
   const styledNodes = nodes.map((node) => ({
     ...node,
@@ -323,8 +379,16 @@ if (!repositoryLoaded) {
         gap: "20px",
       }}
     >
+      <img
+        src={flowrestaLogo}
+        style={{
+          width: "160px",
+          marginBottom: "10px",
+        }}
+      />
+
       <h1>
-        🌲 {repositoryName || "Flowresta"}
+        Flowresta
       </h1>
 
       <input
@@ -414,9 +478,33 @@ if (!repositoryLoaded) {
         }}
       >
 
-        <h1>
-          🌲 {repositoryName || "Flowresta"}
-        </h1>
+        <div
+          onClick={() => {
+            setRepositoryLoaded(false);
+            setRepositoryUrl("");
+          }}
+
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            cursor: "pointer",
+          }}
+        >
+
+          <img
+            src={flowrestaLogo}
+
+            style={{
+              width: "45px",
+            }}
+          />
+
+          <h1>
+            {repositoryName || "Flowresta"}
+          </h1>
+
+        </div>
 
         <div
           style={{
@@ -538,13 +626,30 @@ if (!repositoryLoaded) {
 
       <div
         style={{
-          border: "1px solid #30363d",
-          borderRadius: "12px",
-          height: "700px",
+          display: "flex",
+
+          gap: "20px",
+
           marginTop: "20px",
         }}
       >
+
+      <div
+        style={{
+          flex: 1,
+
+          border: "1px solid #30363d",
+
+          borderRadius: "12px",
+
+          height: "700px",
+        }}
+      > 
         <ReactFlow
+          onInit={(instance) => {
+            setReactFlowInstance(instance);
+          }}
+
           nodes={styledNodes}
           edges={edges}
           onPaneClick={() => {
@@ -611,6 +716,100 @@ if (!repositoryLoaded) {
           <Controls />
           <Background />
         </ReactFlow>
+        
+        </div>
+        
+        <div>
+
+            <div
+              style={{
+                width:
+                  compareMode &&
+                  compareBranchA &&
+                  compareBranchB
+                    ? "320px"
+                    : "0px",
+
+                height: "660px",
+
+                overflow: "auto",
+
+                flexDirection: "column",
+
+                display: "flex",
+
+                opacity:
+                  compareMode &&
+                  compareBranchA &&
+                  compareBranchB
+                    ? 1
+                    : 0,
+
+                transform:
+                  compareMode &&
+                  compareBranchA &&
+                  compareBranchB
+                    ? "translateX(0px)"
+                    : "translateX(40px)",
+
+                transition:
+                  "all 0.35s ease",
+
+                border:
+                  compareMode &&
+                  compareBranchA &&
+                  compareBranchB
+                    ? "1px solid #a371f7"
+                    : "none",
+
+                borderRadius: "12px",
+
+                padding:
+                  compareMode &&
+                  compareBranchA &&
+                  compareBranchB
+                    ? "20px"
+                    : "0px",
+
+                background: "#161b22",
+
+                color: "#c9d1d9",
+
+                fontFamily:
+                  "JetBrains Mono, monospace",
+              }}
+            >
+
+              <h3
+                style={{
+                  color: "#a371f7",
+                  marginTop: 0,
+                }}
+              >
+                ✺ Compare Branches
+              </h3>
+
+              <p>
+                A: {compareBranchA}
+              </p>
+
+              <p>
+                B: {compareBranchB}
+              </p>
+
+              <hr />
+
+              <p>
+                + Commits: {compareDetails?.ahead ?? 0}
+              </p>
+
+              <p>
+                - Commits: {compareDetails?.behind ?? 0}
+              </p>
+
+            </div>
+
+        </div>
       </div>
 
 
