@@ -334,6 +334,9 @@ function App() {
     onEdgesChange,
   ] = useEdgesState(initialEdges);
 
+  const [isGrowing, setIsGrowing] =
+    useState(false);
+
   const [reactFlowInstance, setReactFlowInstance] =
     useState<any>(null);
 
@@ -458,6 +461,38 @@ function App() {
   
   const importRepository = async () => {
 
+    setIsGrowing(true);
+
+
+    try {
+
+
+      console.log("🌱 START IMPORT");
+
+
+    // TODO teu código inteiro atual fica aqui
+
+
+    } catch (error) {
+
+
+      console.error(
+        "Flowresta import error",
+        error
+      );
+
+
+    } finally {
+
+
+      setIsGrowing(false);
+
+
+    }
+
+
+  };
+
     console.log("🌱 START IMPORT");
 
     if (!repositoryUrl.trim()) {
@@ -518,6 +553,7 @@ if (!Array.isArray(branches)) {
   return;
 
 }
+
 
 
 console.log(branches);
@@ -621,40 +657,70 @@ const findParentBranch = (branchName: string) => {
 
 
 const githubEdges =
-  githubNodes
+  await Promise.all(
 
-    .filter(
-      node =>
-        node.id !== defaultBranch
-    )
+    githubNodes
 
-    .map((node) => ({
+      .filter(
+        node =>
+          node.id !== defaultBranch
+      )
 
-      id:
-        `${defaultBranch}-${node.id}`,
+      .map(async (node) => {
 
-      source:
-        defaultBranch,
 
-      target:
-        node.id,
+        const parent =
+          await findBranchParent(
+            repo,
+            node.id,
+            branches,
+            defaultBranch
+          );
 
-      data: {
-        health: "Scanning...",
-      },
 
-      style: {
+        return {
 
-        stroke: "#8b949e",
+          id:
+            `${parent}-${node.id}`,
 
-        strokeWidth: 3,
+          source:
+            parent,
 
-      },
+          target:
+            node.id,
 
-    }));
+
+          data: {
+
+            health:
+              "Scanning...",
+
+            parent,
+
+          },
+
+
+          style: {
+
+            stroke:
+              "#8b949e",
+
+            strokeWidth:
+              3,
+
+          },
+
+
+        };
+
+
+      })
+
+  );
 
 
 setEdges(githubEdges);
+
 
 
 setOriginalRepoEdges(githubEdges);
@@ -966,6 +1032,78 @@ githubEdges.forEach(async (edge) => {
 
   };
 
+  const findBranchParent = async (
+    repo: string,
+    branchName: string,
+    branches: any[],
+    defaultBranch: string
+  ) => {
+
+    let bestParent =
+      defaultBranch;
+
+
+    let bestDate =
+      0;
+
+
+    for (const possibleParent of branches) {
+
+
+      if (
+        possibleParent.name === branchName
+      ) {
+        continue;
+      }
+
+
+      try {
+
+
+        const response =
+          await githubFetch(
+            `https://api.github.com/repos/${repo}/compare/${possibleParent.name}...${branchName}`
+          );
+
+
+        if (!response.ok) {
+          continue;
+        }
+
+
+        const data =
+          await response.json();
+
+
+        const baseDate =
+          new Date(
+            data.merge_base_commit.commit.author.date
+          ).getTime();
+
+
+        if (
+          baseDate > bestDate
+        ) {
+
+          bestDate =
+            baseDate;
+
+          bestParent =
+            possibleParent.name;
+
+        }
+
+
+      } catch {}
+
+
+    }
+
+
+    return bestParent;
+
+  };
+
   const showToolbarTooltip = (
     event: React.MouseEvent,
     text: string
@@ -1121,7 +1259,11 @@ if (!repositoryLoaded) {
       />
 
       <button
+
+
         onClick={importRepository}
+
+        disabled={isGrowing}
 
         style={{
           background: "#238636",
@@ -1134,13 +1276,23 @@ if (!repositoryLoaded) {
 
           padding: "12px 24px",
 
-          cursor: "pointer",
+          cursor: isGrowing
+            ? "not-allowed"
+            : "pointer",
+
+          opacity: isGrowing
+            ? 0.7
+            : 1,
 
           fontFamily:
             "JetBrains Mono, monospace",
         }}
       >
-        Import
+        {isGrowing
+          ? "🌱 Growing..."
+          : "Import"
+        }
+
       </button>
 
       <p
@@ -1697,7 +1849,19 @@ if (!repositoryLoaded) {
                   marginTop: "15px",
                 }}
               >
-                {compareBranchB} vs {compareBranchA}
+                {compareBranchB}
+                 
+                  <span
+                    style={{
+                      color: "#c084fc",
+                      fontWeight: 700,
+                      margin: "0 8px",
+                    }}
+                  >
+                    vs
+                  </span>
+                 
+                {compareBranchA}
               </p>
 
               <hr />
