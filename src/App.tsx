@@ -387,8 +387,38 @@ if (!repositoryLoaded) {
         }}
       />
 
-      <h1>
-        Flowresta
+      <h1
+        style={{
+          fontFamily: "Inter, sans-serif",
+          fontSize: "42px",
+          fontWeight: 800,
+          letterSpacing: "-2px",
+          margin: 0,
+          lineHeight: "1.2",
+        }}
+      >
+        <span
+          style={{
+            background:
+              "linear-gradient(90deg, #7ee787, #56d4c8)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
+          Flow
+        </span>
+
+        <span
+          style={{
+            color: "#8b949e",
+
+            fontWeight: 300,
+
+            letterSpacing: "-1px",
+          }}
+        >
+          resta
+        </span>
       </h1>
 
       <input
@@ -473,10 +503,15 @@ if (!repositoryLoaded) {
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
+
           alignItems: "center",
+
+          width: "100%",
+
+          gap: "30px",
         }}
       >
+
 
         <div
           onClick={() => {
@@ -486,25 +521,101 @@ if (!repositoryLoaded) {
 
           style={{
             display: "flex",
+
+            flexDirection: "column",
+
             alignItems: "center",
-            gap: "12px",
+
             cursor: "pointer",
+
+            width: "160px",
           }}
         >
+
 
           <img
             src={flowrestaLogo}
 
             style={{
-              width: "45px",
+              width: "50px",
             }}
           />
 
-          <h1>
-            {repositoryName || "Flowresta"}
+
+          <h1
+            style={{
+              fontFamily: "Inter, sans-serif",
+
+              fontSize: "28px",
+
+              fontWeight: 800,
+
+              margin: 0,
+
+              lineHeight: "1.2",
+            }}
+          >
+
+            <span
+              style={{
+                background:
+                  "linear-gradient(90deg,#7ee787,#56d4c8)",
+
+                WebkitBackgroundClip: "text",
+
+                WebkitTextFillColor:
+                  "transparent",
+              }}
+            >
+              Flow
+            </span>
+
+
+            <span
+              style={{
+                color: "#8b949e",
+
+                fontWeight: 300,
+
+                letterSpacing: "-1px",
+              }}
+            >
+              resta
+            </span>
+
           </h1>
+              
 
         </div>
+
+
+        <span
+          style={{
+            maxWidth: "600px",
+
+            overflow: "hidden",
+
+            textOverflow: "ellipsis",
+
+            whiteSpace: "nowrap",
+
+            color: "#8b949e",
+
+            fontFamily:
+              "JetBrains Mono, monospace",
+
+            fontSize: "15px",
+
+            marginTop: "4px",
+          }}
+        >
+
+          {repositoryName}
+
+        </span>
+
+
+
 
         <div
           style={{
@@ -513,6 +624,7 @@ if (!repositoryLoaded) {
             alignItems: "center",
             color: "#8b949e",
             fontFamily: "JetBrains Mono, monospace",
+            marginLeft: "auto",
           }}
         >
           <span
@@ -789,22 +901,49 @@ if (!repositoryLoaded) {
                 ✺ Compare Branches
               </h3>
 
-              <p>
-                A: {compareBranchA}
-              </p>
+              <div
+                style={{
+                  border: "1px solid #30363d",
+                  borderRadius: "10px",
+                  padding: "12px",
+                }}
+              >
 
-              <p>
-                B: {compareBranchB}
-              </p>
+                <p>
+                  ✦ {compareBranchA}
+                </p>
+
+                <p
+                  style={{
+                    color: "#a371f7",
+                    textAlign: "center",
+                  }}
+                >
+                  ↕
+                </p>
+
+                <p>
+                  ✦ {compareBranchB}
+                </p>
+
+              </div>
 
               <hr />
 
+              <h4
+                style={{
+                  color: "#a371f7",
+                }}
+              >
+                Changes
+              </h4>
+
               <p>
-                + Commits: {compareDetails?.ahead ?? 0}
+                ↟ Ahead: {compareDetails?.ahead ?? 0}
               </p>
 
               <p>
-                - Commits: {compareDetails?.behind ?? 0}
+                ↡ Behind: {compareDetails?.behind ?? 0}
               </p>
 
             </div>
