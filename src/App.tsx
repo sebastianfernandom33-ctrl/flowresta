@@ -5,6 +5,7 @@ import ReactFlow, {
   Background,
   Controls,
   useNodesState,
+  useEdgesState,
 } from "reactflow";
 
 import "reactflow/dist/style.css";
@@ -18,7 +19,7 @@ const initialNodes = [
     position: { x: 400, y: 50 },
 
     data: {
-      label: "🛡️ main",
+      label: "main",
     },
 
     style: {
@@ -89,7 +90,7 @@ const initialNodes = [
   },
 ];
 
-const edges = [
+const initialEdges = [
   {
     id: "e1",
     source: "main",
@@ -191,7 +192,129 @@ const compareData = {
   },
 };
 
+const compareCommitData = {
+  "main-develop": {
+
+    onlyInTarget: [
+      "aaa111 Fix login",
+      "bbb222 Update pipeline",
+      "ccc333 Improve UI",
+    ],
+
+    onlyInBase: [
+      "ghi789 Merge release",
+    ],
+  },
+
+
+  "main-release": {
+
+    onlyInTarget: [
+      "ddd444 Release v1.2",
+      "eee555 Update changelog",
+    ],
+
+    onlyInBase: [],
+  },
+
+
+  "develop-hotfix": {
+
+    onlyInTarget: [
+      "fff666 Fix production bug",
+    ],
+
+    onlyInBase: [
+      "ccc333 Improve UI",
+    ],
+  },
+};
+
+const compareFileData = {
+  "main-develop": [
+    {
+      file: "src/App.tsx",
+      added: 35,
+      removed: 4,
+    },
+
+    {
+      file: "README.md",
+      added: 12,
+      removed: 1,
+    },
+  ],
+
+
+  "main-release": [
+    {
+      file: "package.json",
+      added: 2,
+      removed: 0,
+    },
+  ],
+
+
+  "develop-hotfix": [
+    {
+      file: "src/auth.ts",
+      added: 5,
+      removed: 8,
+    },
+  ],
+};
+
+const mergePreviewData = {
+  "main-develop": {
+    status: "Ready to merge",
+
+    checks: [
+      "Pipeline passed",
+      "No conflicts",
+      "Review approved",
+    ],
+  },
+
+
+  "main-release": {
+    status: "Waiting",
+
+    checks: [
+      "Pipeline running",
+      "Review pending",
+    ],
+  },
+
+
+  "develop-hotfix": {
+    status: "Needs attention",
+
+    checks: [
+      "Pipeline failed",
+      "Conflict detected",
+    ],
+  },
+};
+
 const STORAGE_KEY = "flowresta-layout";
+
+const GITHUB_TOKEN =
+  import.meta.env.VITE_GITHUB_TOKEN;
+
+const githubFetch = (url: string) => {
+
+  return fetch(url, {
+
+    headers: {
+
+      Authorization:
+        `Bearer ${GITHUB_TOKEN}`,
+
+    },
+
+  });
+
+};
 
 function App() {
 
@@ -204,6 +327,12 @@ function App() {
         ? JSON.parse(savedLayout)
         : initialNodes
     );
+
+  const [
+    edges,
+    setEdges,
+    onEdgesChange,
+  ] = useEdgesState(initialEdges);
 
   const [reactFlowInstance, setReactFlowInstance] =
     useState<any>(null);
@@ -221,6 +350,41 @@ function App() {
 
   const [repositoryUrl, setRepositoryUrl] =
     useState("");
+
+  const [repoBranches, setRepoBranches] =
+    useState<any[]>([]);
+
+  const [branchCommitDetails, setBranchCommitDetails] =
+    useState<any>(null);
+
+  const [branchCommits, setBranchCommits] =
+    useState<any[]>([]);
+
+  const [currentRepo, setCurrentRepo] =
+    useState("");
+
+  const [defaultRepoBranch, setDefaultRepoBranch] =
+    useState("");
+
+  const [realCompare, setRealCompare] =
+    useState<any>(null);
+
+  const [toolbarTooltip, setToolbarTooltip] =
+  useState("");
+
+  const [originalRepoNodes, setOriginalRepoNodes] =
+    useState<any[]>([]);
+
+  const [originalRepoEdges, setOriginalRepoEdges] =
+    useState<any[]>([]);
+
+  const [
+    toolbarTooltipPosition,
+    setToolbarTooltipPosition,
+  ] = useState({
+    x: 0,
+    y: 0,
+  });
 
   const [repositoryLoaded, setRepositoryLoaded] =
     useState(false);
@@ -265,21 +429,308 @@ function App() {
   ]);
 
   const resetLayout = () => {
+
     localStorage.removeItem(STORAGE_KEY);
 
-  setNodes(initialNodes);
+
+    if (originalRepoNodes.length > 0) {
+
+      setNodes(originalRepoNodes);
+
+      setEdges(originalRepoEdges);
+
+    }
+
 
     setSelectedBranch("Nenhuma");
+
+
+    setTimeout(() => {
+
+      reactFlowInstance?.fitView({
+        padding: 0.2,
+        duration: 800,
+      });
+
+    }, 100);
+
   };
   
-  const importRepository = () => {
+  const importRepository = async () => {
+
+    console.log("🌱 START IMPORT");
 
     if (!repositoryUrl.trim()) {
       return;
     }
 
-    setRepositoryLoaded(true);
-  };  
+
+    const repo =
+      repositoryUrl
+        .replace("https://github.com/", "")
+        .replace(/\/$/, "");
+
+      console.log(
+        "🌳 REPO:",
+        repo
+      );
+
+    const repoResponse =
+      await githubFetch(
+        `https://api.github.com/repos/${repo}`
+      );
+
+
+    const repoInfo =
+      await repoResponse.json();
+
+    console.log(
+      "📦 REPO INFO:",
+      repoInfo
+    );
+
+
+    const defaultBranch =
+      repoInfo.default_branch;
+      setDefaultRepoBranch(defaultBranch);
+
+    const response =
+      await githubFetch(
+        `https://api.github.com/repos/${repo}/branches`
+      );
+
+
+const branches =
+  await response.json();
+
+  console.log(
+    "🌿 BRANCH RESPONSE:",
+    branches
+  );
+
+if (!Array.isArray(branches)) {
+
+  console.error(
+    "GitHub branches error:",
+    branches
+  );
+
+  return;
+
+}
+
+
+console.log(branches);
+
+
+setRepoBranches(branches);
+
+
+const sortedBranches =
+  [
+    ...branches.filter(
+      (branch) =>
+        branch.name === defaultBranch
+    ),
+
+    ...branches.filter(
+      (branch) =>
+        branch.name !== defaultBranch
+    ),
+  ];
+
+
+const visibleBranches =
+  sortedBranches.slice(0, 20);
+
+const githubNodes =
+  visibleBranches.map((branch, index) => ({
+
+    id: branch.name,
+
+    draggable: true,
+
+    position: {
+      x:
+        index === 0
+          ? 500
+          : 150 + (index % 5) * 200,
+
+      y:
+        index === 0
+          ? 50
+          : 200 + Math.floor(index / 5) * 120,
+    },
+
+    data: {
+      label:
+        branch.protected
+          ? `${branch.name}`
+          : branch.name,
+    },
+
+    style: {
+      background: "#161b22",
+
+      border: branch.protected
+        ? "2px solid #8b949e"
+        : "1px solid #30363d",
+
+      color: branch.protected
+        ? "#8b949e"
+        : "#c9d1d9",
+
+      borderRadius: "10px",
+
+      padding: "8px",
+
+      fontFamily:
+        "JetBrains Mono, monospace",
+    },
+
+  }));
+
+
+setNodes(githubNodes);
+
+setOriginalRepoNodes(githubNodes);
+
+const findParentBranch = (branchName: string) => {
+
+  if (
+    branchName.startsWith("feature") &&
+    githubNodes.some(
+      (node) => node.id === "develop"
+    )
+  ) {
+    return "develop";
+  }
+
+
+  if (
+    branchName.startsWith("hotfix") ||
+    branchName.startsWith("release")
+  ) {
+    return defaultBranch;
+  }
+
+
+  return defaultBranch;
+
+};
+
+
+const githubEdges =
+  githubNodes
+
+    .filter(
+      node =>
+        node.id !== defaultBranch
+    )
+
+    .map((node) => ({
+
+      id:
+        `${defaultBranch}-${node.id}`,
+
+      source:
+        defaultBranch,
+
+      target:
+        node.id,
+
+      data: {
+        health: "Scanning...",
+      },
+
+      style: {
+
+        stroke: "#8b949e",
+
+        strokeWidth: 3,
+
+      },
+
+    }));
+
+
+setEdges(githubEdges);
+
+
+setOriginalRepoEdges(githubEdges);
+
+console.log(
+  "🌳 FLOWRESTA READY",
+  githubNodes,
+  githubEdges
+);
+
+setRepositoryLoaded(true);
+
+githubEdges.forEach(async (edge) => {
+
+  const health =
+    await scanBranchHealth(
+      repo,
+      defaultBranch,
+      edge.target
+    );
+
+
+  setEdges((currentEdges) =>
+
+    currentEdges.map((current) => {
+
+      if (current.id !== edge.id) {
+
+        return current;
+
+      }
+
+
+      return {
+
+        ...current,
+
+
+        data: {
+
+          ...current.data,
+
+
+          health:
+            health.status,
+
+          ahead:
+            health.ahead,
+
+          behind:
+            health.behind,
+
+        },
+
+
+        style: {
+
+          ...current.style,
+
+
+          stroke:
+            health.color,
+
+        },
+
+      };
+
+
+    })
+
+  );
+
+
+});
+
+  }; 
 
   const repositoryName =
     repositoryUrl
@@ -297,10 +748,16 @@ function App() {
   });
 
   const details =
-    branchData[selectedBranch as keyof typeof branchData];
+    repoBranches.find(
+      branch =>
+        branch.name === selectedBranch
+    );
 
   const hoveredDetails =
-    branchData[hoveredBranch as keyof typeof branchData];
+    repoBranches.find(
+      branch =>
+        branch.name === hoveredBranch
+    );
 
   const compareKey =
     `${compareBranchA}-${compareBranchB}`;
@@ -309,6 +766,219 @@ function App() {
     compareData[
       compareKey as keyof typeof compareData
     ];
+
+  const compareCommits =
+    compareCommitData[
+      compareKey as keyof typeof compareCommitData
+    ];  
+
+  const compareFiles =
+    compareFileData[
+      compareKey as keyof typeof compareFileData
+    ];
+
+  const mergePreview = {
+
+    status:
+      realCompare?.behind_by > 10
+        ? "Needs update"
+        : "Ready to merge",
+
+    checks: [
+      "Compare analyzed",
+      "No conflicts detected",
+      `${realCompare?.files?.length ?? 0} files changed`,
+    ],
+
+  };
+
+  const loadBranchCommitDetails = async (
+    sha: string
+  ) => {
+
+    const response =
+      await githubFetch(
+        `https://api.github.com/repos/${currentRepo}/commits/${sha}`
+      );
+
+
+    const data =
+      await response.json();
+
+
+    setBranchCommitDetails(data);
+
+  };
+
+  const loadBranchCommits = async (
+    branchName: string
+  ) => {
+
+    const response =
+      await githubFetch(
+        `https://api.github.com/repos/${currentRepo}/commits?sha=${branchName}`
+      );
+
+
+    const data =
+      await response.json();
+
+
+    setBranchCommits(data);
+
+  };
+
+  const loadRealCompare = async (
+    base: string,
+    head: string
+  ) => {
+
+    const response =
+      await githubFetch(
+        `https://api.github.com/repos/${currentRepo}/compare/${base}...${head}`
+      );
+
+
+    const data =
+      await response.json();
+
+
+    console.log(
+      "COMPARE REAL",
+      data
+    );
+
+
+    setRealCompare(data);
+
+  };
+
+  const scanBranchHealth = async (
+    repo: string,
+    baseBranch: string,
+    branchName: string
+  ) => {
+
+    try {
+
+      const response =
+        await githubFetch(
+          `https://api.github.com/repos/${repo}/compare/${baseBranch}...${branchName}`
+        );
+
+
+      if (!response.ok) {
+
+        return {
+          color: "#8b949e",
+          status: "Normal",
+          ahead: 0,
+          behind: 0,
+        };
+
+      }
+
+
+      const data =
+        await response.json();
+
+
+      // 🟢 pronto para merge
+      if (
+        data.ahead_by > 0 &&
+        data.behind_by === 0
+      ) {
+
+        return {
+
+          color: "#3fb950",
+
+          status:
+            "Merge OK",
+
+          ahead:
+            data.ahead_by,
+
+          behind:
+            data.behind_by,
+
+        };
+
+      }
+
+
+      // 🟡 possível merge mas precisa atualizar
+      if (
+        data.ahead_by > 0 &&
+        data.behind_by > 0
+      ) {
+
+        return {
+
+          color: "#d29922",
+
+          status:
+            "Merge Possible",
+
+          ahead:
+            data.ahead_by,
+
+            behind:
+              data.behind_by,
+
+        };
+
+      }
+
+
+    // ⚪ branch sem ação
+      return {
+
+        color: "#8b949e",
+
+        status:
+          "Normal",
+
+        ahead:
+          data.ahead_by,
+
+        behind:
+          data.behind_by,
+
+      };
+
+
+    } catch {
+
+      return {
+
+        color: "#8b949e",
+
+        status: "Normal",
+
+        ahead: 0,
+
+        behind: 0,
+
+      };
+
+    }
+
+  };
+
+  const showToolbarTooltip = (
+    event: React.MouseEvent,
+    text: string
+  ) => {
+
+    setToolbarTooltip(text);
+
+    setToolbarTooltipPosition({
+      x: event.clientX,
+      y: event.clientY,
+    });
+
+  };
 
   const styledNodes = nodes.map((node) => ({
     ...node,
@@ -627,28 +1297,18 @@ if (!repositoryLoaded) {
             marginLeft: "auto",
           }}
         >
-          <span
-            title="Merge Conflicts"
-            style={{
-              color: "#f85149",
-              fontSize: "20px",
-            }}
-          >
-            ◉{summary.conflict}
-          </span>
 
           <span
-            title="Merge Requests"
-            style={{
-              color: "#d29922",
-              fontSize: "20px",
-            }}
-          >
-            ◉{summary.mr}
-          </span>
-
-          <span
-            title="Normal Relationships"
+            onMouseEnter={(event) =>
+              showToolbarTooltip(
+                event,
+                "Normal"
+              )
+            }     
+            
+            onMouseLeave={() =>
+              setToolbarTooltip("")
+            }    
             style={{
               color: "#8b949e",
               fontSize: "20px",
@@ -658,7 +1318,17 @@ if (!repositoryLoaded) {
           </span>
 
           <span
-            title="Merge OK"
+            onMouseEnter={(event) =>
+              showToolbarTooltip(
+                event,
+                "Merge Ok"
+              )
+            }     
+            
+            onMouseLeave={() =>
+              setToolbarTooltip("")
+            }            
+            
             style={{
               color: "#3fb950",
               fontSize: "20px",
@@ -667,15 +1337,65 @@ if (!repositoryLoaded) {
             ◉{summary.ok}
           </span>
 
+          <span
+            onMouseEnter={(event) =>
+              showToolbarTooltip(
+                event,
+                "Merge possible"
+              )
+            }     
+            
+            onMouseLeave={() =>
+              setToolbarTooltip("")
+            }             
+            
+            style={{
+              color: "#d29922",
+              fontSize: "20px",
+            }}
+          >
+            ◉{summary.mr}
+          </span>
+
+          <span
+            onMouseEnter={(event) =>
+              showToolbarTooltip(
+                event,
+                "Merge conflict"
+              )
+            }     
+            
+            onMouseLeave={() =>
+              setToolbarTooltip("")
+            }         
+            style={{
+              color: "#f85149",
+              fontSize: "20px",
+            }}
+          >
+            ◉{summary.conflict}
+          </span>
+
          <button
+            onMouseEnter={(event) =>
+              showToolbarTooltip(
+                event,
+                "Reset Layout"
+              )
+            }     
+            
+            onMouseLeave={() =>
+              setToolbarTooltip("")
+            }    
+
             onClick={resetLayout}
-            title="Reset Layout"
+            
             style={{
               background: "#161b22",
               color: "#8b949e",
               border: "1px solid #30363d",
               borderRadius: "8px",
-              padding: "6px 14px",
+              padding: "6px 16px",
               cursor: "pointer",
               fontFamily: "JetBrains Mono, monospace",
               fontSize: "30px",
@@ -695,8 +1415,18 @@ if (!repositoryLoaded) {
               }
 
             }}
+          
+            onMouseEnter={(event) =>
+              showToolbarTooltip(
+                event,
+                "Compare branches"
+              )
+            }
 
-            title="Compare"
+            onMouseLeave={() =>
+              setToolbarTooltip("")
+            }
+
 
             style={{
               background: "#161b22",
@@ -769,6 +1499,8 @@ if (!repositoryLoaded) {
           }}
           onNodesChange={onNodesChange}
 
+          onEdgesChange={onEdgesChange}
+
           onNodeDragStart={() => {
             setIsDragging(true);
             
@@ -787,7 +1519,27 @@ if (!repositoryLoaded) {
           onNodeClick={(_, node) => {
 
             if (!compareMode) {
+
               setSelectedBranch(node.id);
+
+
+              const branch =
+                repoBranches.find(
+                  branch =>
+                    branch.name === node.id
+                );
+
+
+              if (branch) {
+
+                loadBranchCommitDetails(
+                  branch.commit.sha
+                );
+
+              }
+
+              loadBranchCommits(node.id);
+
               return;
             }
 
@@ -796,11 +1548,15 @@ if (!repositoryLoaded) {
               return;
             }
 
-            if (
-              !compareBranchB &&
-              node.id !== compareBranchA
-            ) {
+            if (!compareBranchB) {
+
               setCompareBranchB(node.id);
+
+              loadRealCompare(
+                compareBranchA,
+                node.id
+              );
+
             }
 
           }}
@@ -825,7 +1581,9 @@ if (!repositoryLoaded) {
             setHoveredBranch("");
           }}
         >
-          <Controls />
+          <Controls
+            showInteractive={false}
+          />
           <Background />
         </ReactFlow>
         
@@ -844,7 +1602,9 @@ if (!repositoryLoaded) {
 
                 height: "660px",
 
-                overflow: "auto",
+                overflowY: "auto",
+
+                overflowX: "hidden",
 
                 flexDirection: "column",
 
@@ -928,6 +1688,18 @@ if (!repositoryLoaded) {
 
               </div>
 
+              <p
+                style={{
+                  color: "#8b949e",
+
+                  textAlign: "center",
+
+                  marginTop: "15px",
+                }}
+              >
+                {compareBranchB} vs {compareBranchA}
+              </p>
+
               <hr />
 
               <h4
@@ -939,12 +1711,256 @@ if (!repositoryLoaded) {
               </h4>
 
               <p>
-                ↟ Ahead: {compareDetails?.ahead ?? 0}
+                ↟ {compareBranchB} ahead
               </p>
 
-              <p>
-                ↡ Behind: {compareDetails?.behind ?? 0}
+              <strong>
+                {realCompare?.ahead_by ?? 0} commits
+              </strong>
+
+
+              <p
+                style={{
+                  marginTop: "15px",
+                }}
+              >
+                ↡ {compareBranchB} behind
               </p>
+
+              <strong>
+                {realCompare?.behind_by ?? 0} commits
+              </strong>
+
+              <h4
+                style={{
+                  color: "#a371f7",
+                  marginTop: "25px",
+                }}
+              >
+                Commits in {compareBranchB}
+              </h4>
+
+
+              <div
+                style={{
+                  border: "1px solid #30363d",
+
+                  borderRadius: "10px",
+
+                  padding: "12px",
+
+                  background: "#0d1117",
+
+                  fontSize: "13px",
+
+                  height: "220px",
+
+                  minHeight: "220px",
+
+                  flexShrink: 0,
+
+                  overflowY: "auto",
+
+                  overflowX: "hidden",
+
+                  paddingRight: "8px",
+
+                }}
+              >
+
+                {realCompare?.commits?.map((commit) => (
+
+                  <p
+                    key={commit.sha}
+
+                    style={{
+
+                      color: "#8b949e",
+
+                      textAlign: "left",
+
+                      lineHeight: "1.5",
+
+                      wordBreak: "break-word",
+
+                    }}
+                  >
+
+                    <>
+                      -{" "}
+
+                      <span
+                        style={{
+                          color:"#c9d1d9",
+                        }}
+                      >
+
+                        {commit.sha.substring(0,7)}
+
+                      </span>
+
+
+                      {" "}
+
+
+                      {
+                        commit.commit.message
+                          .split("\n")[0]
+                      }
+
+                    </>
+
+                  </p>
+
+                ))}
+
+              </div>
+
+
+              <h4
+                style={{
+                  color: "#a371f7",
+                  marginTop: "25px",
+                }}
+              >
+                Files Changed
+              </h4>
+
+
+              <div
+                style={{
+                  border: "1px solid #30363d",
+
+                  borderRadius: "10px",
+
+                  padding: "12px",
+
+                  background: "#0d1117",
+
+                  height: "220px",
+
+                  minHeight: "220px",
+
+                  flexShrink: 0,
+
+                  overflowY: "auto",
+
+                  overflowX: "hidden",
+                }}
+              >
+
+                {realCompare?.files?.map((file) => (
+
+                  <div
+                    key={file.filename}
+
+                    style={{
+                      marginBottom: "15px",
+                    }}
+                  >
+
+                    <p
+                      style={{
+                        color: "#c9d1d9",
+
+                        wordBreak: "break-all",
+
+                        overflowWrap: "anywhere",
+
+                        lineHeight: "1.5",
+                      }}
+                    >
+
+                      {file.filename}
+
+                    </p>
+
+
+                    <span
+                      style={{
+                       color: "#8b949e",
+                      }}
+                    >
+
+                      +{file.additions}
+
+                      {" "}
+
+                      -{file.deletions}
+
+                    </span>
+
+                  </div>
+
+                ))}
+
+
+              </div>
+
+              <h4
+                style={{
+                  color: "#a371f7",
+                  marginTop: "25px",
+                }}
+              >
+                Merge Preview
+              </h4>
+
+
+              <div
+                style={{
+                  border: "1px solid #30363d",
+
+                  borderRadius: "10px",
+
+                  padding: "12px",
+
+                  background: "#0d1117",
+                }}
+              >
+
+
+                <p>
+                  Status
+                </p>
+
+
+                <strong>
+                  {mergePreview?.status}
+                </strong>
+
+
+                <hr />
+
+
+                {mergePreview?.checks.map((check) => (
+
+                  <p
+                    key={check}
+
+                    style={{
+                      color: "#8b949e",
+                    }}
+                  >
+
+                    <span
+                      style={{
+                        color: "#58a6ff",
+                      }}
+                    >
+                      ✓
+                    </span>
+
+                    {" "}
+
+                    {check}
+
+                  </p>
+
+                ))}
+
+
+              </div>
 
             </div>
 
@@ -1000,30 +2016,55 @@ if (!repositoryLoaded) {
       </p>
     )}
 
-    {details && (
-      <>
-        <p>
-          <strong>Author:</strong> {details.author}
-        </p>
+  {details && (
+    <>
 
-        <p>
-          <strong>Last Pipeline:</strong>{" "}
+      <p>
+        <strong>SHA:</strong>{" "}
+        {details.commit.sha.substring(0, 7)}
+      </p>
 
-          {details.pipeline === "success" && "OK"}
+      <p>
+        <strong>Author:</strong>{" "}
 
-          {details.pipeline === "failed" && "NOK"}
+        {
+          branchCommitDetails
+            ?.commit
+            ?.author
+            ?.name
+        }
+      </p>
 
-          {details.pipeline === "running" && "Running"}
 
-          {details.pipeline === "not-started" && "Not Started"}
-        </p>
+      <p>
+        <strong>Date:</strong>{" "}
 
-        <p>
-          <strong>Roles:</strong>{" "}
-          {details.roles.join(", ")}
-        </p>
-      </>
-    )}
+        {
+          branchCommitDetails
+            ?.commit
+            ?.author
+            ?.date
+            ?.substring(0,10)
+        }
+      </p>
+
+
+      <p>
+        <strong>Status:</strong>{" "}
+
+        {details.protected
+          ? "Protected"
+          : "Open"}
+      </p>
+
+
+      <p>
+        <strong>Branch:</strong>{" "}
+        {details.name}
+      </p>
+
+    </>
+  )}
 
   </div>
 
@@ -1041,14 +2082,44 @@ if (!repositoryLoaded) {
 
     <h3>↪︎ Commit History</h3>
 
+    <div
+      style={{
+        maxHeight: "260px",
+
+        overflowY: "auto",
+
+        paddingRight: "8px",
+      }}
+    >
+
     {selectedBranch !== "Nenhuma" ? (
 
-      commitData[
-        selectedBranch as keyof typeof commitData
-      ]?.map((commit) => (
+      branchCommits.map((commit) => (
 
-        <p key={commit}>
-          {commit}
+        <p
+          key={commit.sha}
+
+          style={{
+            color: "#8b949e",
+            
+            lineHeight: "1.5",
+          }}
+        >
+
+          - {" "}
+
+          <span
+            style={{
+              color: "#c9d1d9",
+          }}
+        >
+          {commit.sha.substring(0,7)}
+        </span>
+
+          {" "}
+
+          {commit.commit.message.split("\n")[0]}
+
         </p>
 
       ))
@@ -1068,8 +2139,46 @@ if (!repositoryLoaded) {
 
   </div>
 
-</div>
+  </div>
 
+</div>
+    
+    {toolbarTooltip && (
+
+      <div
+        style={{
+          position: "fixed",
+
+          left:
+            toolbarTooltipPosition.x + 15,
+
+          top:
+            toolbarTooltipPosition.y + 15,
+
+          background: "#161b22",
+
+          border: "1px solid #30363d",
+
+          borderRadius: "10px",
+
+          padding: "10px",
+
+          color: "#c9d1d9",
+
+          fontFamily:
+            "JetBrains Mono, monospace",
+
+          fontSize: "12px",
+
+          zIndex: 9999,
+        }}
+      >
+
+        {toolbarTooltip}
+
+      </div>
+
+    )}
 
     {hoveredDetails && !isDragging && (
       <div
@@ -1098,42 +2207,13 @@ if (!repositoryLoaded) {
         }}
       >
         <strong>
-          {hoveredDetails.pipeline === "success" && (
-            <span style={{ color: "#58a6ff" }}>
-              ✓
-            </span>
-          )}
-
-          {hoveredDetails.pipeline === "failed" && (
-            <span style={{ color: "#58a6ff" }}>
-              ✕
-            </span>
-          )}
-
-          {hoveredDetails.pipeline === "running" && (
-            <span style={{ color: "#58a6ff" }}>
-              ϟ
-            </span>
-          )}
-
-          {" "}
-
           {hoveredBranch}
-
-          {hoveredDetails?.protected && (
-            <span
-              style={{
-                fontStyle: "italic",
-                color: "#8b949e",
-                marginLeft: "6px",
-              }}
-            >
-              (protected)
-            </span>
-          )}
         </strong>
 
-        <p>Author: {hoveredDetails?.author}</p>
+        <p>
+         SHA:
+         {hoveredDetails.commit.sha.substring(0,7)}
+        </p>
 
       </div>
     )}
