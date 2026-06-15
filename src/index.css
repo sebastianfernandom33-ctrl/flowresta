@@ -31,6 +31,29 @@
   }
 }
 
+@keyframes growPanel {
+
+from {
+
+ opacity:0;
+ transform:
+   translateX(20px)
+   scale(.97);
+
+}
+
+to {
+
+ opacity:1;
+
+ transform:
+   translateX(0)
+   scale(1);
+
+}
+
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --text: #9ca3af;
@@ -109,4 +132,179 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+.react-flow__edge.life-flow path {
+
+  stroke-dasharray: none;
+
+  filter:
+    drop-shadow(
+      0 0 4px
+      rgba(90,255,160,.35)
+    );
+
+  animation:
+    sapPulse
+    4s
+    ease-in-out
+    infinite;
+
+}
+
+
+@keyframes sapPulse {
+
+
+  0% {
+
+    opacity:.75;
+
+    filter:
+      drop-shadow(
+        0 0 2px
+        rgba(90,255,160,.25)
+      );
+
+  }
+
+
+  50% {
+
+    opacity:1;
+
+    filter:
+      drop-shadow(
+        0 0 6px
+        rgba(90,255,160,.33)
+      );
+
+  }
+
+
+  100% {
+
+    opacity:.75;
+
+    filter:
+      drop-shadow(
+        0 0 2px
+        rgba(90,255,160,.25)
+      );
+
+  }
+
+
+}
+
+.flowresta-home:hover {
+
+  transform:
+    scale(1.05);
+
+  animation:
+    logoWake
+    1.8s
+    ease-in-out
+    infinite;
+
+}
+
+
+@keyframes logoWake {
+
+
+  0% {
+
+    filter:
+      drop-shadow(
+        0 0 4px
+        rgba(126,231,135,.25)
+      );
+
+  }
+
+
+  50% {
+
+    filter:
+      drop-shadow(
+        0 0 16px
+        rgba(126,231,135,.75)
+      );
+
+  }
+
+
+  100% {
+
+    filter:
+      drop-shadow(
+        0 0 4px
+        rgba(126,231,135,.25)
+      );
+
+  }
+
+
+}
+.react-flow__controls {
+  background: #161b22 !important;
+
+  border:
+    1px solid #30363d !important;
+
+  border-radius: 12px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 0 20px #56d4c822;
+}
+
+
+.react-flow__controls-button {
+  background: #161b22 !important;
+
+  color: #7ee787 !important;
+
+  border-bottom:
+    1px solid #30363d !important;
+}
+
+
+.react-flow__controls-button:hover {
+  background: #102820 !important;
+
+  color: #56d4c8 !important;
+}
+
+
+.react-flow__controls-button svg {
+
+  fill:#7ee787;
+
+}
+
+*::-webkit-scrollbar{
+ width:10px;
+ height:10px;
+}
+
+
+*::-webkit-scrollbar-track{
+ background:#0d1117;
+ border-radius:10px;
+}
+
+
+*::-webkit-scrollbar-thumb{
+ background:#30363d;
+ border-radius:10px;
+ border:2px solid #0d1117;
+}
+
+
+*::-webkit-scrollbar-thumb:hover{
+ background:#58a6ff55;
 }
