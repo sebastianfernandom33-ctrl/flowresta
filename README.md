@@ -93,12 +93,12 @@ Change how your repository grows:
 
 ## 🖼 Preview
 
-![Flowresta](./docs/flowresta-home.png)
-![Flowresta](./docs/flowresta-tree.png)
-![Flowresta](./docs/ancient-tree-1.png)
-![Flowresta](./docs/ancient-tree-2.png)
-![Flowresta](./docs/compare-mode.png)
-![Flowresta](./docs/druid-guide.png)
+![Flowresta](./doc/flowresta-home.png)
+![Flowresta](./doc/flowresta-tree.png)
+![Flowresta](./doc/ancient-tree-1.png)
+![Flowresta](./doc/ancient-tree-2.png)
+![Flowresta](./doc/compare-mode.png)
+![Flowresta](./doc/druid-guide.png)
 
 
 ---
