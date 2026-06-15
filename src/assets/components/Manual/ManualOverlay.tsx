@@ -18,7 +18,9 @@ function ManualOverlay({
   selected,
   setSelected
  ] =
- useState("tutorial");
+ useState<
+ keyof typeof manual
+ >("tutorial");
 
 
  const current =
@@ -404,7 +406,7 @@ style={{
 
 
 {
-current.action && (
+(current as any).action && (
 
 <button
 
@@ -439,7 +441,7 @@ onClick={()=>{
 >
 
 {
- current.action
+ (current as any).action
 }
 
 </button>

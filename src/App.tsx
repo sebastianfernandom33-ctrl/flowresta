@@ -162,98 +162,8 @@ const initialEdges = [
 ];
 
 
-
-const compareData = {
-  "main-develop": {
-    ahead: 3,
-    behind: 1,
-  },
-
-  "main-release": {
-    ahead: 5,
-    behind: 0,
-  },
-
-  "develop-hotfix": {
-    ahead: 2,
-    behind: 2,
-  },
-};
-
 const nodeTypes = {
  branch: BranchNode
-};
-
-const compareCommitData = {
-  "main-develop": {
-
-    onlyInTarget: [
-      "aaa111 Fix login",
-      "bbb222 Update pipeline",
-      "ccc333 Improve UI",
-    ],
-
-    onlyInBase: [
-      "ghi789 Merge release",
-    ],
-  },
-
-
-  "main-release": {
-
-    onlyInTarget: [
-      "ddd444 Release v1.2",
-      "eee555 Update changelog",
-    ],
-
-    onlyInBase: [],
-  },
-
-
-  "develop-hotfix": {
-
-    onlyInTarget: [
-      "fff666 Fix production bug",
-    ],
-
-    onlyInBase: [
-      "ccc333 Improve UI",
-    ],
-  },
-};
-
-const compareFileData = {
-  "main-develop": [
-    {
-      file: "src/App.tsx",
-      added: 35,
-      removed: 4,
-    },
-
-    {
-      file: "README.md",
-      added: 12,
-      removed: 1,
-    },
-  ],
-
-
-  "main-release": [
-    {
-      file: "package.json",
-      added: 2,
-      removed: 0,
-    },
-  ],
-
-
-  "develop-hotfix": [
-    {
-      file: "src/auth.ts",
-      added: 5,
-      removed: 8,
-    },
-  ],
 };
 
 const MAX_TREE_BRANCHES = 50;
@@ -304,14 +214,14 @@ async function processGardenBatch(
 }
 
 function analyzeGarden(
-  nodes,
-  edges
+ nodes:any[],
+ edges:any[]
 ) {
 
   const branchCount =
     nodes.length;
 
-  const childrenMap = {};
+  const childrenMap:any = {};
 
 
   edges.forEach(edge => {
@@ -338,7 +248,7 @@ function analyzeGarden(
   }
 );
 
-  const childGroups =
+  const childGroups:any[] =
     Object.values(
       childrenMap
     );
@@ -404,7 +314,9 @@ function analyzeGarden(
 
 }
 
-function analyzeForestLife(branches) {
+function analyzeForestLife(
+  branches:any[]
+) {
 
 
   if(
@@ -467,10 +379,6 @@ function analyzeForestLife(branches) {
       )
     );
 
-
-  const oldestYear =
- new Date(oldest)
-  .getFullYear();
 
 
 const newestYear =
@@ -1143,7 +1051,9 @@ const currentNodes =
   );
 
 // 🌳 encontra irmãos reais da branch
-const siblingsOf = (nodeId) => {
+const siblingsOf = (
+  nodeId:string
+):any[] => {
 
 
   const parentEdge =
@@ -1176,7 +1086,7 @@ const siblingsOf = (nodeId) => {
 
 // 🌿 filhos diretos
 const childrenOf =
-  (id) => {
+  (id:string) => {
 
     return currentNodes.filter(
       n =>
@@ -1359,7 +1269,9 @@ currentNodes.forEach(
     target:
      node.id,
 
-    artificial:true,
+    data:{
+      artificial:true
+    },
 
    });
 
@@ -1398,9 +1310,6 @@ const nextNodes =
           other.id === node.id
       );
 
-
-    const center =
-      (sameGeneration.length - 1) / 2;
 
 
 // 🌳 CROWN - copa de árbol Flowresta
@@ -1679,7 +1588,7 @@ if (mode === "paripinnate") {
 
 
   const branchChildren =
-    (id) =>
+    (id:string) =>
       currentNodes.filter(
         n =>
           workingEdges.some(
@@ -1699,14 +1608,14 @@ if (mode === "paripinnate") {
       : [];
 
 
-  const positions = {};
+  const positions:any = {};
 
 
   // 🌿 cria uma nervura
   const growStem = (
-    id,
-    startX,
-    startY,
+    id:string,
+    startX:number,
+    startY:number,
     direction = 1,
     depth = 0
   ) => {
@@ -2209,7 +2118,7 @@ const visibleBranches =
   sortedBranches;
 
 const githubNodes =
-  visibleBranches.map((branch, index) => ({
+  visibleBranches.map((branch:any, index) => ({
 
     type: "branch",
 
@@ -2614,7 +2523,7 @@ setRepositoryLoaded(true);
 const hasTreeGroups =
  githubNodesWithHandles.some(
   node =>
-   node.data?.isClan
+   (node.data as any)?.isClan
  );
 
 setRepositoryLoaded(true);
@@ -2694,7 +2603,7 @@ processGardenBatch(
 
  5,
 
- async(edge)=>{
+ async(edge:any)=>{
 
 
   const health =
@@ -3226,9 +3135,6 @@ setIsGrowing(false);
       branch =>
         branch.name === hoveredBranch
     );
-
-  const compareKey =
-    `${compareBranchA}-${compareBranchB}`;
 
   const mergePreview = {
 
@@ -3907,7 +3813,7 @@ const returnCoreTree = () => {
 
       border:
 
-  node.data?.isClan
+  (node.data as any)?.isClan
 
   ?
 
@@ -4288,6 +4194,9 @@ isGrowing
 
 
 <Druid
+druidMode={
+  druidMode
+}
 
  forestLoaded={
   repositoryLoaded
@@ -4398,7 +4307,7 @@ showManual && (
 
  }}
 
- openTutorial={(type)=>{
+ openTutorial={(type:any)=>{
 
 
   setShowManual(false);
@@ -4534,7 +4443,7 @@ showManual && (
 
  }}
 
- openTutorial={(type)=>{
+ openTutorial={(type:any)=>{
 
 
   setShowManual(false);
@@ -5217,7 +5126,7 @@ style={{
                 const hasTreeGroups =
                   nodes.some(
                     node =>
-                      node.data?.isClan
+                      (node.data as any)?.isClan
                   );
 
 
@@ -5780,7 +5689,7 @@ style={{
 
 {
 selectedClan.data.branches.map(
- branch => (
+ (branch:any) => (
 
 
 <div
@@ -6116,7 +6025,7 @@ style={{
           onNodeClick={(_, node) => {
 
              if(
-               node.data?.isClan
+               (node.data as any)?.isClan
               ){
 
                setSelectedClan(
@@ -6481,7 +6390,7 @@ style={{
                 }}
               >
 
-                {realCompare?.commits?.map((commit) => (
+                {realCompare?.commits?.map((commit:any) => (
 
                   <p
                     key={commit.sha}
@@ -6565,7 +6474,7 @@ style={{
                 }}
               >
 
-                {realCompare?.files?.map((file) => (
+                {realCompare?.files?.map((file:any) => (
 
                   <div
                     key={file.filename}
@@ -6838,7 +6747,7 @@ style={{
 
     {selectedBranch !== "Nenhuma" ? (
 
-      branchCommits.map((commit) => (
+      branchCommits.map((commit:any) => (
 
         <p
           key={commit.sha}

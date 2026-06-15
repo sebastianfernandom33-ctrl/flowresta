@@ -6,7 +6,7 @@ import {
 
 export default function BranchNode({
   data
-}) {
+}:any) {
 
   
 

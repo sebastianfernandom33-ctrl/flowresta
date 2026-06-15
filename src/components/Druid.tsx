@@ -13,7 +13,7 @@ export default function Druid({
   forestBranches,
   forestLoaded,
   druidMode,
-}) {
+}:any) {
 
   console.log(
  "🧙 DRUID RENDER",
@@ -39,7 +39,7 @@ const actions =
   messages[0]?.actions || [];
 
 const getBranchYear = (
- branch
+ branch:any
 )=>{
 
 
@@ -86,13 +86,13 @@ const getBranchYear = (
 const branchYears =
  forestBranches
  ?.map(
-  branch =>
+  (branch:any) =>
    getBranchYear(
     branch
    )
  )
  .filter(
-  year =>
+  (year:any) =>
    year !== null
  )
  ??
@@ -148,7 +148,7 @@ const safeLifeTo =
 
 const selectedBranches =
  forestBranches?.filter(
-  branch=>{
+  (branch:any)=>{
 
    const year =
  getBranchYear(
@@ -563,7 +563,7 @@ gap:"15px",
 
 {
 actions.map(
-(action,index)=>(
+(action:any,index:number)=>(
 
 
 <button
@@ -704,7 +704,7 @@ cursor:"pointer",
 {
 isTalking &&
 actions.map(
-(action,index)=>(
+(action:any,index:number)=>(
 
 <button
 

@@ -12,7 +12,10 @@ import {
 function TutorialOverlay({
  type,
  onClose
-}:any){
+}:{
+  type:keyof typeof tutorials,
+  onClose:any
+}){
 
 
  const [
