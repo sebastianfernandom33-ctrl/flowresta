@@ -1,73 +1,190 @@
-# React + TypeScript + Vite
+<p align="center">
+  <img src="./src/assets/flowresta-logo.png" width="120" />
+</p>
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+<h1 align="center">
+𖣂 Flowresta
+</h1>
 
-Currently, two official plugins are available:
+<p align="center">
+Transform your Git repositories into living forests 🌳
+</p>
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 𓆧 What is Flowresta?
 
-## Expanding the ESLint configuration
+Flowresta is an experimental Git visualization tool that transforms repositories into interactive living forests.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Branches become trees.  
+Commits become growth rings.  
+History becomes life.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Instead of reading a repository as a list,
+Flowresta lets you explore software evolution visually.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+## ✨ Features
+
+
+### 𖣂 Living Git Forest
+
+Visualize repository branches as organic structures:
+
+- 🌱 branches as living nodes
+- 🌿 relationships between branches
+- 🍃 repository growth visualization
+- 🌳 ancient repository support
+
+
+---
+
+### 𖠻 Ancient Tree Mode
+
+Large repositories are automatically organized into Tree Groups.
+
+Designed for repositories with many branches:
+
+- automatic grouping
+- expandable tree dimensions
+- cleaner exploration
+
+
+---
+
+### 𓁹 Compare Mode
+
+Compare branches visually:
+
+- commits ahead
+- commits behind
+- changed files
+- merge insights
+
+
+---
+
+### 𓆧 drUId / drUXd Assistant
+
+Flowresta includes a forest guide:
+
+- onboarding tutorials
+- repository insights
+- contextual suggestions
+- ancient tree guidance
+
+
+---
+
+### 𓇗 Garden Layouts
+
+Change how your repository grows:
+
+𖣂 Crown Tree  
+𖣂 Root Tree  
+✤ Clover  
+𖠺 Paripinnate
+
+
+---
+
+## 🖼 Preview
+
+![Flowresta](./docs/flowresta-home.png)
+![Flowresta](./docs/flowresta-tree.png)
+![Flowresta](./docs/ancient-tree-1.png)
+![Flowresta](./docs/ancient-tree-2.png)
+![Flowresta](./docs/compare-mode.png)
+![Flowresta](./docs/druid-guide.png)
+
+
+---
+
+## 🚀 Run locally
+
+
+Clone:
+
+```bash
+git clone https://github.com/YOUR_USER/flowresta.git
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Install:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
+
+
+Start:
+
+```bash
+npm run dev
+```
+
+
+Build:
+
+```bash
+npm run build
+```
+
+
+Preview production:
+
+```bash
+npm run preview
+```
+
+
+---
+
+## 🛠 Tech Stack
+
+- React
+- TypeScript
+- Vite
+- React Flow
+- GitHub API
+
+
+---
+
+## 🌱 Philosophy
+
+Codebases are not static.
+
+They grow.  
+They branch.  
+They evolve.
+
+Flowresta tries to reconnect software engineering with nature.
+
+
+---
+
+## 👤 Creator
+
+Created by:
+
+Sebastian Martinez
+
+🌎 Chile / Brazil
+
+
+---
+
+## 📜 License
+
+MIT License
+
+
+---
+
+<p align="center">
+𖣂 Plant your Flowresta
+</p>
