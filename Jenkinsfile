@@ -63,9 +63,15 @@ pipeline {
         stage('Helm Upgrade') {
             steps {
                 sh '''
+                export AWS_SHARED_CREDENTIALS_FILE=/var/jenkins_home/.aws/credentials
+                export AWS_CONFIG_FILE=/var/jenkins_home/.aws/config
+                export AWS_PAGER=""
+
+                kubectl get nodes
+
                 helm upgrade --install flowresta ./helm/flowresta \
-                --set image.repository=${ECR_REPO} \
-                --set image.tag=${IMAGE_TAG}
+                  --set image.repository=252556588994.dkr.ecr.us-east-1.amazonaws.com/flowresta \
+                  --set image.tag=${BUILD_NUMBER}
                 '''
             }
         }
