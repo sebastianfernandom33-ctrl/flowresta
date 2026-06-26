@@ -68,9 +68,11 @@ pipeline {
                 echo "HOME=$HOME"
                 echo "KUBECONFIG=$KUBECONFIG"
 
+                ls -la $KUBECONFIG
                 ls -la /var/jenkins_home/.kube
                 cat /var/jenkins_home/.kube/config | tail -20
 
+                export KUBECONFIG=/var/jenkins_home/.kube/config
                 export AWS_SHARED_CREDENTIALS_FILE=/var/jenkins_home/.aws/credentials
                 export AWS_CONFIG_FILE=/var/jenkins_home/.aws/config
                 export AWS_PAGER=""
@@ -84,6 +86,7 @@ pipeline {
         stage('Helm Upgrade') {
             steps {
                 sh '''
+                export KUBECONFIG=/var/jenkins_home/.kube/config
                 export AWS_SHARED_CREDENTIALS_FILE=/var/jenkins_home/.aws/credentials
                 export AWS_CONFIG_FILE=/var/jenkins_home/.aws/config
                 export AWS_PAGER=""
