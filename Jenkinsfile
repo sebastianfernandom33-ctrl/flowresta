@@ -60,6 +60,27 @@ pipeline {
             }
         }
 
+        stage('Debug Kubernetes') {
+            steps {
+                sh '''
+                whoami
+                pwd
+                echo "HOME=$HOME"
+                echo "KUBECONFIG=$KUBECONFIG"
+
+                ls -la /var/jenkins_home/.kube
+                cat /var/jenkins_home/.kube/config | tail -20
+
+                export AWS_SHARED_CREDENTIALS_FILE=/var/jenkins_home/.aws/credentials
+                export AWS_CONFIG_FILE=/var/jenkins_home/.aws/config
+                export AWS_PAGER=""
+
+                kubectl config current-context
+                kubectl get nodes
+                '''
+            }
+        }
+
         stage('Helm Upgrade') {
             steps {
                 sh '''
