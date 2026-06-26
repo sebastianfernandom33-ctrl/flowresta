@@ -38,4 +38,12 @@ RUN echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.git
 
 RUN apt-get update && apt-get install -y trivy
 
+# Sonar Scanner
+RUN wget -O /tmp/sonar.zip \
+https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-7.1.0.4889-linux-aarch64.zip \
+&& unzip /tmp/sonar.zip -d /opt \
+&& mv /opt/sonar-scanner-* /opt/sonar-scanner \
+&& ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner \
+&& rm -f /tmp/sonar.zip
+
 USER jenkins

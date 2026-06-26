@@ -5,6 +5,14 @@ pipeline {
         AWS_REGION = 'us-east-1'
         ECR_REPO = '252556588994.dkr.ecr.us-east-1.amazonaws.com/flowresta'
         IMAGE_TAG = "${BUILD_NUMBER}"
+
+        KUBECONFIG = "/var/jenkins_home/.kube/config"
+
+        AWS_SHARED_CREDENTIALS_FILE = "/var/jenkins_home/.aws/credentials"
+        AWS_CONFIG_FILE = "/var/jenkins_home/.aws/config"
+        AWS_PAGER = ""
+
+        SCANNER_HOME = tool 'sonar-scanner'
     }
 
     stages {
@@ -14,6 +22,20 @@ pipeline {
                 checkout scm
             }
         }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonar') {
+                    sh """
+                        ${SCANNER_HOME}/bin/sonar-scanner \
+                        -Dsonar.projectKey=flowresta \
+                        -Dsonar.projectName=flowresta \
+                        -Dsonar.sources=src
+                    """
+                }
+            }
+        }
+
 
         stage('Build Docker Image') {
             steps {
