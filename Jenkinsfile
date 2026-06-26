@@ -18,7 +18,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                docker build -t flowresta:${IMAGE_TAG} .
+                docker buildx build --platform linux/amd64 -t flowresta:${BUILD_NUMBER} --load .
                 '''
             }
         }

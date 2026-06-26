@@ -26,4 +26,16 @@ RUN curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | b
 RUN apt-get update \
  && apt-get install -y docker.io
 
+# Trivy
+RUN apt-get update && apt-get install -y wget gnupg lsb-release
+
+RUN wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key \
+ | gpg --dearmor \
+ | tee /usr/share/keyrings/trivy.gpg > /dev/null
+
+RUN echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" \
+ | tee /etc/apt/sources.list.d/trivy.list
+
+RUN apt-get update && apt-get install -y trivy
+
 USER jenkins
