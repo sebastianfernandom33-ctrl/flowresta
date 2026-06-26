@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flowresta
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: flowresta
+  template:
+    metadata:
+      labels:
+        app: flowresta
+    spec:
+      containers:
+      - name: flowresta
+        image: 252556588994.dkr.ecr.us-east-1.amazonaws.com/flowresta:v1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
